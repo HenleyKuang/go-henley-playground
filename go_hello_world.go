@@ -5,29 +5,24 @@
 
 package main
 
-import "fmt"
-
-// Here's a function that will take an arbitrary number
-// of `int`s as arguments.
-func sum(nums ...int) {
-    fmt.Print(nums)
-    total := 0
-    for _, num := range nums {
-        total += num
-    }
-    fmt.Println(total)
-}
+import (
+	"fmt"
+	"net/http"
+	"reflect"
+)
 
 func main() {
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "Hello world!\nRequest data:\n")
+		v := reflect.ValueOf(*r)
+		typeOfS := v.Type()
 
-    // Variadic functions can be called in the usual way
-    // with individual arguments.
-    sum(1, 2)
-    sum(1, 2, 3)
+		for i := 0; i < v.NumField(); i++ {
+			typeValue := typeOfS.Field(i).Name
+			fieldValue := v.Field(i)
+			fmt.Fprintf(w, "%-20s: %v\n", typeValue, fieldValue)
+		}
+	})
 
-    // If you already have multiple args in a slice,
-    // apply them to a variadic function using
-    // `func(slice...)` like this.
-    nums := []int{1, 2, 3, 4}
-    sum(nums...)
+	http.ListenAndServe(":8080", nil)
 }
